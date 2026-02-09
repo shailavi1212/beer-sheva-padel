@@ -571,8 +571,28 @@ body::after {
   .sponsor-bar .label { display: none; }
   .sponsor-slot { width: 100px; height: 34px; }
 
-  .scoreboard-hud { flex-wrap: wrap; min-height: auto; }
+.scoreboard-hud { 
+  flex-direction: column; 
+  min-height: auto; 
+}
 
+.score-center {
+  order: 2;
+  justify-content: center;
+  width: 100%;
+  padding: 6px 0;
+}
+
+.team-panel.team-a {
+  order: 1;
+  justify-content: center;
+}
+
+.team-panel.team-b {
+  order: 3;
+  justify-content: center;
+  flex-direction: row;
+}
   .team-panel { padding: 10px 12px; gap: 10px; }
   .team-name { font-size: 13px; letter-spacing: 1px; }
   .player-names { font-size: 11px; }
