@@ -819,14 +819,6 @@ function updateScoreUI() {
   document.getElementById('setsBDisplay').textContent = matchData.setsB;
   document.getElementById('scoreTeamALabel').textContent = matchData.teamA || 'TEAM A';
   document.getElementById('scoreTeamBLabel').textContent = matchData.teamB || 'TEAM B';
-  const pointsAEl = document.getElementById('pointsADisplay');
-  const pointsBEl = document.getElementById('pointsBDisplay');
-  if (pointsAEl) pointsAEl.textContent = getPointsDisplay(matchData.pointsA || 0, matchData.isTiebreak);
-  if (pointsBEl) pointsBEl.textContent = getPointsDisplay(matchData.pointsB || 0, matchData.isTiebreak);
-  const tbBtn = document.getElementById('tiebreakToggle');
-  if (tbBtn) {
-    tbBtn.textContent = matchData.isTiebreak ? '🟢 TIEBREAK ON' : 'TIEBREAK OFF';
-    tbBtn.classList.toggle('active', matchData.isTiebreak);
 }
 
 function updateServeUI() {
