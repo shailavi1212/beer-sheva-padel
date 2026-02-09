@@ -822,7 +822,15 @@ matchRef.on('value', (snapshot) => {
 
   const newScoreA = data.scoreA ?? 0;
   const newScoreB = data.scoreB ?? 0;
+  const POINTS_SEQUENCE = [0, 15, 30, 40];
+   let prevPointsA = null;
+   let prevPointsB = null;
 
+   function getPointsDisplay(val, isTiebreak) {
+     if (isTiebreak) return val;
+     if (val >= 0 && val < POINTS_SEQUENCE.length) return POINTS_SEQUENCE[val];
+     return 'A';
+   }
   if (prevScoreA !== null && prevScoreA !== newScoreA) pulseScore(scoreAEl);
   if (prevScoreB !== null && prevScoreB !== newScoreB) pulseScore(scoreBEl);
 
@@ -834,7 +842,20 @@ matchRef.on('value', (snapshot) => {
   // Sets
   document.getElementById('setsA').textContent = data.setsA ?? 0;
   document.getElementById('setsB').textContent = data.setsB ?? 0;
+  // Points
+  const isTiebreak = data.isTiebreak || false;
+  const pointsAEl = document.getElementById('pointsA');
+  const pointsBEl = document.getElementById('pointsB');
+  const newPointsA = getPointsDisplay(data.pointsA || 0, isTiebreak);
+  const newPointsB = getPointsDisplay(data.pointsB || 0, isTiebreak);
 
+if (prevPointsA !== null && prevPointsA !== newPointsA) pulseScore(pointsAEl);
+if (prevPointsB !== null && prevPointsB !== newPointsB) pulseScore(pointsBEl);
+
+pointsAEl.textContent = newPointsA;
+pointsBEl.textContent = newPointsB;
+prevPointsA = newPointsA;
+prevPointsB = newPointsB;
   // Serve
   const panelA = document.getElementById('panelA');
   const panelB = document.getElementById('panelB');
