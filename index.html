@@ -439,6 +439,39 @@ body::after {
   border-left: 1px solid rgba(0, 240, 255, 0.08);
   border-right: 1px solid rgba(0, 240, 255, 0.08);
 }
+.points-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  min-width: 50px;
+  background: rgba(251, 191, 36, 0.06);
+  border-left: 1px solid rgba(251, 191, 36, 0.12);
+  border-right: 1px solid rgba(251, 191, 36, 0.12);
+}
+.points-block .label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--neon-yellow);
+  opacity: 0.7;
+  margin-bottom: 2px;
+}
+
+.points-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--neon-yellow);
+  line-height: 1;
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+  transition: all 0.2s;
+}
+
+.points-value.pulse {
+  animation: scorePulse 0.5s ease-out;
+}
 
 .sets-block:first-child {
   border-radius: var(--radius) 0 0 var(--radius);
@@ -569,7 +602,8 @@ body::after {
   .sets-value { font-size: 18px; }
   .score-block { min-width: 50px; padding: 6px 10px; }
   .sets-block { min-width: 40px; padding: 6px 10px; }
-
+  .points-value { font-size: 20px; }
+  .points-block { min-width: 40px; padding: 6px 8px; }
   .serve-label { font-size: 7px; }
 }
 
@@ -645,25 +679,33 @@ body::after {
     </div>
 
     <!-- Score Center -->
-    <div class="score-center">
-      <div class="sets-block">
-        <span class="label">Sets</span>
-        <span class="sets-value" id="setsA">0</span>
-      </div>
-      <div class="score-block">
-        <span class="label">Games</span>
-        <span class="score-value" id="scoreA">0</span>
-      </div>
-      <span class="score-divider">:</span>
-      <div class="score-block">
-        <span class="label">Games</span>
-        <span class="score-value" id="scoreB">0</span>
-      </div>
-      <div class="sets-block">
-        <span class="label">Sets</span>
-        <span class="sets-value" id="setsB">0</span>
-      </div>
-    </div>
+   <div class="score-center">
+     <div class="sets-block">
+       <span class="label">Sets</span>
+       <span class="sets-value" id="setsA">0</span>
+     </div>
+     <div class="score-block">
+       <span class="label">Games</span>
+       <span class="score-value" id="scoreA">0</span>
+     </div>
+     <div class="points-block">
+       <span class="label">Pts</span>
+       <span class="points-value" id="pointsA">0</span>
+     </div>
+     <span class="score-divider">:</span>
+     <div class="points-block">
+       <span class="label">Pts</span>
+       <span class="points-value" id="pointsB">0</span>
+     </div>
+     <div class="score-block">
+       <span class="label">Games</span>
+       <span class="score-value" id="scoreB">0</span>
+     </div>
+     <div class="sets-block">
+       <span class="label">Sets</span>
+       <span class="sets-value" id="setsB">0</span>
+     </div>
+   </div>
 
     <!-- Team B -->
     <div class="team-panel team-b" id="panelB">
