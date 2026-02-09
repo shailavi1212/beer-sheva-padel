@@ -622,6 +622,38 @@ body::before {
       </div>
     </div>
   </div>
+  
+<!-- POINTS (Tennis-style) -->
+<div class="card">
+  <div class="card-title">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+    Points (Game Points)
+  </div>
+  <div style="display:flex;justify-content:center;margin-bottom:12px;">
+    <button class="serve-btn" id="tiebreakToggle" onclick="toggleTiebreak()" style="font-size:10px;letter-spacing:1px;">TIEBREAK OFF</button>
+  </div>
+  <div class="score-controls">
+    <div class="score-team team-a">
+      <div class="score-team-label">PTS A</div>
+      <div class="score-display" id="pointsADisplay">0</div>
+      <div class="score-btns">
+        <button class="btn-score minus" onclick="adjustPoints('A', -1)">−</button>
+        <button class="btn-score" onclick="adjustPoints('A', 1)">+</button>
+      </div>
+    </div>
+    <div class="score-team team-b">
+      <div class="score-team-label">PTS B</div>
+      <div class="score-display" id="pointsBDisplay">0</div>
+      <div class="score-btns">
+        <button class="btn-score minus" onclick="adjustPoints('B', -1)">−</button>
+        <button class="btn-score" onclick="adjustPoints('B', 1)">+</button>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:center;margin-top:12px;">
+    <button class="btn-set" onclick="resetPoints()" style="width:auto;padding:6px 16px;font-size:10px;">Reset Points</button>
+  </div>
+</div>
 
   <!-- SERVE -->
   <div class="card">
@@ -740,6 +772,8 @@ let matchData = {
   playersA: '', playersB: '',
   scoreA: 0, scoreB: 0,
   setsA: 0, setsB: 0,
+  pointsA: 0, pointsB: 0,
+  isTiebreak: false,
   serving: 'A',
   streamURL: '',
   sponsors: { s1: '', s2: '', s3: '' }
@@ -785,6 +819,12 @@ function updateScoreUI() {
   document.getElementById('setsBDisplay').textContent = matchData.setsB;
   document.getElementById('scoreTeamALabel').textContent = matchData.teamA || 'TEAM A';
   document.getElementById('scoreTeamBLabel').textContent = matchData.teamB || 'TEAM B';
+  document.getElementById('pointsADisplay').textContent = getPointsDisplay(matchData.pointsA || 0, matchData.isTiebreak);
+  document.getElementById('pointsBDisplay').textContent = getPointsDisplay(matchData.pointsB || 0, matchData.isTiebreak);
+  const tbBtn = document.getElementById('tiebreakToggle');
+  if (tbBtn) {
+    tbBtn.textContent = matchData.isTiebreak ? '🟢 TIEBREAK ON' : 'TIEBREAK OFF';
+    tbBtn.classList.toggle('active', matchData.isTiebreak);
 }
 
 function updateServeUI() {
@@ -797,6 +837,39 @@ function updateServeUI() {
 // ══════════════════════════════════
 // WRITE TO FIREBASE
 // ══════════════════════════════════
+// Tennis-style points sequence
+const POINTS_SEQUENCE = [0, 15, 30, 40];
+
+function getPointsDisplay(pointsVal, isTiebreak) {
+  if (isTiebreak) return pointsVal; // tiebreak: 0,1,2,3...
+  if (pointsVal >= 0 && pointsVal < POINTS_SEQUENCE.length) {
+    return POINTS_SEQUENCE[pointsVal];
+  }
+  return 'A'; // advantage
+}
+
+function adjustPoints(team, delta) {
+  const key = team === 'A' ? 'pointsA' : 'pointsB';
+  let newVal;
+  if (matchData.isTiebreak) {
+    // Tiebreak: simple increment/decrement (0, 1, 2, 3...)
+    newVal = Math.max(0, (matchData[key] || 0) + delta);
+  } else {
+    // Tennis points: 0=0, 1=15, 2=30, 3=40, 4=A
+    newVal = Math.max(0, Math.min(4, (matchData[key] || 0) + delta));
+  }
+  pushData({ [key]: newVal }, `Points ${team}: ${getPointsDisplay(newVal, matchData.isTiebreak)}`);
+}
+
+function toggleTiebreak() {
+  const newVal = !matchData.isTiebreak;
+  pushData({ isTiebreak: newVal, pointsA: 0, pointsB: 0 }, newVal ? 'Tiebreak ON' : 'Tiebreak OFF');
+}
+
+function resetPoints() {
+  pushData({ pointsA: 0, pointsB: 0 }, 'Points reset');
+}
+  
 function pushData(updates, msg) {
   matchRef.update(updates).then(() => {
     Object.assign(matchData, updates);
@@ -833,7 +906,7 @@ function switchServe() {
 // Resets
 function resetScores() {
   if (!confirm('Reset scores and sets to 0?')) return;
-  pushData({ scoreA: 0, scoreB: 0, setsA: 0, setsB: 0 }, 'Scores reset');
+pushData({ scoreA: 0, scoreB: 0, setsA: 0, setsB: 0, pointsA: 0, pointsB: 0, isTiebreak: false }, 'Scores reset');
 }
 
 function resetAll() {
@@ -843,11 +916,13 @@ function resetAll() {
     playersA: '', playersB: '',
     scoreA: 0, scoreB: 0,
     setsA: 0, setsB: 0,
+    pointsA: 0, pointsB: 0,
+    isTiebreak: false,
     serving: 'A',
     streamURL: '',
     sponsors: { s1: '', s2: '', s3: '' }
   }).then(() => {
-    matchData = { teamA: '', teamB: '', playersA: '', playersB: '', scoreA: 0, scoreB: 0, setsA: 0, setsB: 0, serving: 'A', streamURL: '', sponsors: { s1: '', s2: '', s3: '' } };
+    matchData = { teamA: '', teamB: '', playersA: '', playersB: '', scoreA: 0, scoreB: 0,pointsA: 0, pointsB: 0,isTiebreak: false , setsA: 0, setsB: 0, serving: 'A', streamURL: '', sponsors: { s1: '', s2: '', s3: '' } };
     syncUI(matchData);
     showToast('All data reset');
   });
