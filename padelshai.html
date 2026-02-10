@@ -634,7 +634,7 @@ body::before {
   </div>
   <div class="score-controls">
     <div class="score-team team-a">
-      <div class="score-team-label">PTS A</div>
+      <div class="score-team-label" id="pointsTeamALabel">PTS A</div>
       <div class="score-display" id="pointsADisplay">0</div>
       <div class="score-btns">
         <button class="btn-score minus" onclick="adjustPoints('A', -1)">−</button>
@@ -642,7 +642,7 @@ body::before {
       </div>
     </div>
     <div class="score-team team-b">
-      <div class="score-team-label">PTS B</div>
+      <div class="score-team-label" id="pointsTeamBLabel">PTS B</div>
       <div class="score-display" id="pointsBDisplay">0</div>
       <div class="score-btns">
         <button class="btn-score minus" onclick="adjustPoints('B', -1)">−</button>
@@ -819,6 +819,8 @@ function updateScoreUI() {
   document.getElementById('setsBDisplay').textContent = matchData.setsB;
   document.getElementById('scoreTeamALabel').textContent = matchData.teamA || 'TEAM A';
   document.getElementById('scoreTeamBLabel').textContent = matchData.teamB || 'TEAM B';
+  document.getElementById('pointsTeamALabel').textContent = matchData.teamA || 'PTS A';
+  document.getElementById('pointsTeamBLabel').textContent = matchData.teamB || 'PTS B';
 }
 
 function updateServeUI() {
