@@ -244,18 +244,17 @@ body::after {
 }
 
 /* ═══════════════════════════════════════════
-   SCOREBOARD HUD OVERLAY
+   SCOREBOARD HUD — TENNIS-STYLE ROWS
    ═══════════════════════════════════════════ */
 .scoreboard-hud {
   position: relative;
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
   background: linear-gradient(180deg, rgba(5, 8, 16, 0.95), rgba(11, 15, 26, 0.98));
   border: 1px solid rgba(0, 240, 255, 0.12);
   border-top: none;
   border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   overflow: hidden;
-  min-height: 90px;
 }
 
 .scoreboard-hud::before {
@@ -275,39 +274,71 @@ body::after {
   100% { background-position: 300% 0%; }
 }
 
-/* Team panels */
-.team-panel {
-  flex: 1;
+/* Column headers row */
+.score-header {
   display: flex;
   align-items: center;
-  padding: 14px 20px;
-  gap: 16px;
-  position: relative;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.06);
+}
+
+.score-header .col-name { 
+  flex: 1; 
+  padding-left: 52px;
+}
+
+.score-header .col-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 8px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  width: 64px;
+  text-align: center;
+}
+
+.score-header .col-label.pts-label {
+  color: var(--neon-yellow);
+  opacity: 0.6;
+}
+
+/* Team row */
+.team-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
   transition: all 0.3s ease;
+  position: relative;
 }
 
-.team-panel.team-a {
-  justify-content: flex-start;
-  background: linear-gradient(135deg, rgba(0, 240, 255, 0.04), transparent);
+.team-row:first-of-type {
+  border-bottom: 1px solid rgba(0, 240, 255, 0.06);
 }
 
-.team-panel.team-b {
-  justify-content: flex-end;
-  background: linear-gradient(225deg, rgba(168, 85, 247, 0.04), transparent);
+.team-row.serving {
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.04), transparent 40%);
 }
 
 /* Serve indicator */
+.serve-cell {
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .serve-indicator {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: rgba(100, 100, 100, 0.3);
-  border: 1px solid rgba(100, 100, 100, 0.2);
+  background: rgba(100, 100, 100, 0.15);
+  border: 1px solid rgba(100, 100, 100, 0.1);
   transition: all 0.4s ease;
-  flex-shrink: 0;
 }
 
-.team-panel.serving .serve-indicator {
+.team-row.serving .serve-indicator {
   background: var(--neon-yellow);
   border-color: var(--neon-yellow);
   box-shadow: 0 0 8px rgba(251, 191, 36, 0.6), 0 0 20px rgba(251, 191, 36, 0.3);
@@ -319,96 +350,71 @@ body::after {
   50% { box-shadow: 0 0 12px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.4); transform: scale(1.2); }
 }
 
-.serve-label {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 8px;
-  letter-spacing: 2px;
-  color: transparent;
-  text-transform: uppercase;
-  transition: color 0.3s;
-  white-space: nowrap;
-}
-
-.team-panel.serving .serve-label {
-  color: var(--neon-yellow);
-}
-
-.serve-group {
+/* Team name & players cell */
+.name-cell {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.team-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.team-b .team-info {
-  text-align: right;
+  gap: 1px;
+  min-width: 0;
+  padding-right: 12px;
 }
 
 .team-name {
   font-family: 'Orbitron', sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--text-bright);
-  line-height: 1.1;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.team-a .team-name { color: var(--neon-cyan); text-shadow: 0 0 20px rgba(0, 240, 255, 0.3); }
-.team-b .team-name { color: var(--neon-purple); text-shadow: 0 0 20px rgba(168, 85, 247, 0.3); }
+.team-row:first-of-type .team-name { color: var(--neon-cyan); text-shadow: 0 0 20px rgba(0, 240, 255, 0.3); }
+.team-row:last-of-type .team-name { color: var(--neon-purple); text-shadow: 0 0 20px rgba(168, 85, 247, 0.3); }
 
 .player-names {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--text-secondary);
   letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Center score block */
-.score-center {
+/* Score cells */
+.score-cell {
+  width: 64px;
   display: flex;
   align-items: center;
-  gap: 0;
+  justify-content: center;
   flex-shrink: 0;
   position: relative;
 }
 
-.score-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 16px;
-  min-width: 70px;
-  position: relative;
+.score-cell::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 15%;
+  bottom: 15%;
+  width: 1px;
+  background: rgba(0, 240, 255, 0.08);
 }
 
-.score-block .label {
+.score-cell .val {
   font-family: 'Orbitron', sans-serif;
-  font-size: 8px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  opacity: 0.6;
-  margin-bottom: 2px;
-}
-
-.score-value {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 36px;
-  font-weight: 900;
-  color: var(--text-bright);
+  font-weight: 800;
   line-height: 1;
   transition: all 0.2s;
 }
 
-.score-value.pulse {
+.score-cell .val.pulse {
   animation: scorePulse 0.5s ease-out;
 }
 
@@ -418,83 +424,41 @@ body::after {
   100% { transform: scale(1); }
 }
 
-.score-divider {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 28px;
-  font-weight: 300;
-  color: rgba(148, 163, 184, 0.3);
-  padding: 0 2px;
-  align-self: center;
-  margin-top: 10px;
-}
-
-.sets-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 14px;
-  min-width: 55px;
-  background: rgba(0, 0, 0, 0.3);
-  border-left: 1px solid rgba(0, 240, 255, 0.08);
-  border-right: 1px solid rgba(0, 240, 255, 0.08);
-}
-.points-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 12px;
-  min-width: 50px;
-  background: rgba(251, 191, 36, 0.06);
-  border-left: 1px solid rgba(251, 191, 36, 0.12);
-  border-right: 1px solid rgba(251, 191, 36, 0.12);
-}
-.points-block .label {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 8px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--neon-yellow);
-  opacity: 0.7;
-  margin-bottom: 2px;
-}
-
-.points-value {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--neon-yellow);
-  line-height: 1;
-  text-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
-  transition: all 0.2s;
-}
-
-.points-value.pulse {
-  animation: scorePulse 0.5s ease-out;
-}
-
-.sets-block:first-child {
-  border-radius: var(--radius) 0 0 var(--radius);
-}
-
-.sets-block:last-child {
-  border-radius: 0 var(--radius) var(--radius) 0;
-}
-
-.sets-value {
-  font-family: 'Orbitron', sans-serif;
+/* Sets cell */
+.score-cell.sets-cell .val {
   font-size: 22px;
-  font-weight: 700;
   color: var(--neon-green);
-  line-height: 1;
+}
+
+/* Games cell */
+.score-cell.games-cell .val {
+  font-size: 30px;
+  color: var(--text-bright);
+}
+
+/* Points cell */
+.score-cell.pts-cell {
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.score-cell.pts-cell::before {
+  background: rgba(251, 191, 36, 0.12);
+}
+
+.score-cell.pts-cell .val {
+  font-size: 26px;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
 }
 
 /* Match status badge */
-
-
-<div class="match-badge">
-  <span class="dot"></span>
-  Live
-</div>
+.match-badge {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+}
 
 @keyframes liveDot {
   0%, 100% { opacity: 1; }
@@ -570,56 +534,36 @@ body::after {
   .sponsor-bar .label { display: none; }
   .sponsor-slot { width: 100px; height: 34px; }
 
-.scoreboard-hud { 
-  flex-direction: column; 
-  min-height: auto; 
-}
-
-.score-center {
-  order: 2;
-  justify-content: center;
-  width: 100%;
-  padding: 6px 0;
-}
-
-.team-panel.team-a {
-  order: 1;
-  justify-content: center;
-}
-
-.team-panel.team-b {
-  order: 3;
-  justify-content: center;
-  flex-direction: row;
-}
-  .team-panel { padding: 10px 12px; gap: 10px; }
-  .team-name { font-size: 13px; letter-spacing: 1px; }
-  .player-names { font-size: 11px; }
-
-  .score-value { font-size: 26px; }
-  .sets-value { font-size: 18px; }
-  .score-block { min-width: 50px; padding: 6px 10px; }
-  .sets-block { min-width: 40px; padding: 6px 10px; }
-  .points-value { font-size: 20px; }
-  .points-block { min-width: 40px; padding: 6px 8px; }
-  .serve-label { font-size: 7px; }
+  .team-name { font-size: 12px; letter-spacing: 1px; }
+  .player-names { font-size: 10px; }
+  .score-cell { width: 48px; }
+  .score-cell.games-cell .val { font-size: 22px; }
+  .score-cell.sets-cell .val { font-size: 16px; }
+  .score-cell.pts-cell .val { font-size: 18px; }
+  .score-header .col-label { width: 48px; font-size: 7px; }
+  .score-header .col-name { padding-left: 40px; }
+  .serve-cell { width: 30px; }
 }
 
 @media (max-width: 480px) {
-  .team-panel.team-b { flex-direction: row-reverse; }
-  .team-name { font-size: 11px; }
-  .score-value { font-size: 22px; }
-  .score-block { min-width: 40px; padding: 4px 8px; }
+  .team-name { font-size: 10px; }
+  .score-cell { width: 40px; }
+  .score-cell.games-cell .val { font-size: 18px; }
+  .score-cell.sets-cell .val { font-size: 14px; }
+  .score-cell.pts-cell .val { font-size: 16px; }
+  .score-header .col-label { width: 40px; font-size: 6px; }
   .sponsor-slot { width: 80px; height: 28px; }
 }
 
 /* TV-friendly large screen */
 @media (min-width: 1800px) {
   .broadcast-container { max-width: 1700px; }
-  .team-name { font-size: 24px; }
-  .score-value { font-size: 48px; }
-  .sets-value { font-size: 28px; }
-  .player-names { font-size: 16px; }
+  .team-name { font-size: 22px; }
+  .score-cell { width: 80px; }
+  .score-cell.games-cell .val { font-size: 40px; }
+  .score-cell.sets-cell .val { font-size: 30px; }
+  .score-cell.pts-cell .val { font-size: 34px; }
+  .player-names { font-size: 15px; }
 }
 </style>
 </head>
@@ -657,65 +601,57 @@ body::after {
     </div>
   </div>
 
-  <!-- SCOREBOARD HUD -->
+  <!-- SCOREBOARD HUD — Tennis Style Rows -->
   <div class="scoreboard-hud">
-    <div class="match-badge">
-      <span class="dot"></span>
-      Live
+
+    <!-- Column headers -->
+    <div class="score-header">
+      <div class="col-name"></div>
+      <div class="col-label">SETS</div>
+      <div class="col-label">GAMES</div>
+      <div class="col-label pts-label">PTS</div>
     </div>
 
-    <!-- Team A -->
-    <div class="team-panel team-a" id="panelA">
-      <div class="serve-group">
+    <!-- Team A Row -->
+    <div class="team-row" id="rowA">
+      <div class="serve-cell">
         <div class="serve-indicator"></div>
-        <span class="serve-label">Serve</span>
       </div>
-      <div class="team-info">
+      <div class="name-cell">
         <div class="team-name" id="teamAName">TEAM A</div>
         <div class="player-names" id="playersA">—</div>
       </div>
+      <div class="score-cell sets-cell">
+        <span class="val" id="setsA">0</span>
+      </div>
+      <div class="score-cell games-cell">
+        <span class="val" id="scoreA">0</span>
+      </div>
+      <div class="score-cell pts-cell">
+        <span class="val" id="pointsA">0</span>
+      </div>
     </div>
 
-    <!-- Score Center -->
-   <div class="score-center">
-     <div class="sets-block">
-       <span class="label">Sets</span>
-       <span class="sets-value" id="setsA">0</span>
-     </div>
-     <div class="score-block">
-       <span class="label">Games</span>
-       <span class="score-value" id="scoreA">0</span>
-     </div>
-     <div class="points-block">
-       <span class="label">Pts</span>
-       <span class="points-value" id="pointsA">0</span>
-     </div>
-     <span class="score-divider">:</span>
-     <div class="points-block">
-       <span class="label">Pts</span>
-       <span class="points-value" id="pointsB">0</span>
-     </div>
-     <div class="score-block">
-       <span class="label">Games</span>
-       <span class="score-value" id="scoreB">0</span>
-     </div>
-     <div class="sets-block">
-       <span class="label">Sets</span>
-       <span class="sets-value" id="setsB">0</span>
-     </div>
-   </div>
-
-    <!-- Team B -->
-    <div class="team-panel team-b" id="panelB">
-      <div class="serve-group">
+    <!-- Team B Row -->
+    <div class="team-row" id="rowB">
+      <div class="serve-cell">
         <div class="serve-indicator"></div>
-        <span class="serve-label">Serve</span>
       </div>
-      <div class="team-info">
+      <div class="name-cell">
         <div class="team-name" id="teamBName">TEAM B</div>
         <div class="player-names" id="playersB">—</div>
       </div>
+      <div class="score-cell sets-cell">
+        <span class="val" id="setsB">0</span>
+      </div>
+      <div class="score-cell games-cell">
+        <span class="val" id="scoreB">0</span>
+      </div>
+      <div class="score-cell pts-cell">
+        <span class="val" id="pointsB">0</span>
+      </div>
     </div>
+
   </div>
 
   <div class="broadcast-footer">
@@ -855,10 +791,10 @@ pointsBEl.textContent = newPointsB;
 prevPointsA = newPointsA;
 prevPointsB = newPointsB;
   // Serve
-  const panelA = document.getElementById('panelA');
-  const panelB = document.getElementById('panelB');
-  panelA.classList.toggle('serving', data.serving === 'A');
-  panelB.classList.toggle('serving', data.serving === 'B');
+  const rowA = document.getElementById('rowA');
+  const rowB = document.getElementById('rowB');
+  rowA.classList.toggle('serving', data.serving === 'A');
+  rowB.classList.toggle('serving', data.serving === 'B');
 
   // Stream
   updateStream(data.streamURL || '');
