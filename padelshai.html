@@ -398,76 +398,6 @@ body::before {
   background: rgba(239, 68, 68, 0.06);
 }
 
-/* Serve toggle */
-.serve-toggle-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 8px;
-}
-
-.serve-btn {
-  padding: 10px 24px;
-  border-radius: var(--radius);
-  border: 1px solid rgba(251, 191, 36, 0.15);
-  background: rgba(251, 191, 36, 0.04);
-  color: var(--text-secondary);
-  font-family: 'Orbitron', sans-serif;
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.3s;
-  position: relative;
-}
-
-.serve-btn.active {
-  border-color: var(--neon-yellow);
-  background: rgba(251, 191, 36, 0.12);
-  color: var(--neon-yellow);
-  box-shadow: 0 0 15px rgba(251, 191, 36, 0.15);
-}
-
-.serve-btn:hover {
-  background: rgba(251, 191, 36, 0.1);
-}
-
-.serve-icon {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: transparent;
-  margin-right: 6px;
-  vertical-align: middle;
-  transition: background 0.3s;
-}
-
-.serve-btn.active .serve-icon {
-  background: var(--neon-yellow);
-  box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
-}
-
-.serve-switch-btn {
-  padding: 10px 18px;
-  border-radius: var(--radius);
-  border: 1px solid rgba(244, 114, 182, 0.2);
-  background: rgba(244, 114, 182, 0.06);
-  color: var(--neon-pink);
-  font-family: 'Orbitron', sans-serif;
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.serve-switch-btn:hover {
-  background: rgba(244, 114, 182, 0.15);
-  box-shadow: 0 0 15px rgba(244, 114, 182, 0.15);
-}
-
 /* End Set button */
 .btn-end-set {
   width: 100%;
@@ -669,7 +599,6 @@ body::before {
   .form-row { grid-template-columns: 1fr; }
   .score-controls { grid-template-columns: 1fr; gap: 12px; }
   .sets-controls { grid-template-columns: 1fr; gap: 12px; }
-  .serve-toggle-container { flex-direction: column; gap: 10px; }
   .score-display { font-size: 32px; }
 }
 </style>
@@ -817,23 +746,6 @@ body::before {
   </div>
 </div>
 
-  <!-- SERVE -->
-  <div class="card">
-    <div class="card-title">
-      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-      Serve Indicator
-    </div>
-    <div class="serve-toggle-container">
-      <button class="serve-btn active" id="serveA" onclick="setServe('A')">
-        <span class="serve-icon"></span>Team A Serves
-      </button>
-      <button class="serve-switch-btn" onclick="switchServe()">⇄ Switch</button>
-      <button class="serve-btn" id="serveB" onclick="setServe('B')">
-        <span class="serve-icon"></span>Team B Serves
-      </button>
-    </div>
-  </div>
-
   <!-- STREAM URL -->
   <div class="card">
     <div class="card-title">
@@ -977,7 +889,6 @@ function syncUI(data) {
   document.getElementById('sponsor3Input').value = sponsors.s3 || '';
 
   updateScoreUI();
-  updateServeUI();
   renderSetHistory();
 }
 
@@ -1000,12 +911,6 @@ function updateScoreUI() {
   document.getElementById('pointsTeamBLabel').textContent = matchData.teamB || 'PTS B';
 }
 
-function updateServeUI() {
-  const serveA = document.getElementById('serveA');
-  const serveB = document.getElementById('serveB');
-  serveA.classList.toggle('active', matchData.serving === 'A');
-  serveB.classList.toggle('active', matchData.serving === 'B');
-}
 
 // ══════════════════════════════════
 // WRITE TO FIREBASE
@@ -1047,7 +952,6 @@ function pushData(updates, msg) {
   matchRef.update(updates).then(() => {
     Object.assign(matchData, updates);
     updateScoreUI();
-    updateServeUI();
     if (msg) showToast(msg);
   });
 }
@@ -1064,16 +968,6 @@ function adjustSets(team, delta) {
   const key = team === 'A' ? 'setsA' : 'setsB';
   const newVal = Math.max(0, (matchData[key] || 0) + delta);
   pushData({ [key]: newVal }, `Sets ${team}: ${newVal}`);
-}
-
-// Serve
-function setServe(team) {
-  pushData({ serving: team }, `Serve → Team ${team}`);
-}
-
-function switchServe() {
-  const newServe = matchData.serving === 'A' ? 'B' : 'A';
-  pushData({ serving: newServe }, `Serve → Team ${newServe}`);
 }
 
 // End current set: save games to set history, increment winner's sets, reset games & points
