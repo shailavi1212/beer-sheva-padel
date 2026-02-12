@@ -746,6 +746,20 @@ body::before {
   </div>
 </div>
 
+  <!-- BROADCAST DELAY -->
+  <div class="card">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+      Broadcast Delay
+    </div>
+    <div class="form-row single">
+      <div class="form-group">
+        <label>Score delay (seconds) — Games & Points will appear on viewer after this delay</label>
+        <input type="number" id="delayInput" placeholder="15" min="0" max="120" value="15" style="width:120px;">
+      </div>
+    </div>
+  </div>
+
   <!-- STREAM URL -->
   <div class="card">
     <div class="card-title">
@@ -848,6 +862,7 @@ let matchData = {
   pointsA: 0, pointsB: 0,
   isTiebreak: false,
   serving: 'A',
+  scoreDelay: 15,
   streamURL: '',
   sponsors: { s1: '', s2: '', s3: '' },
   setHistory: []
@@ -882,6 +897,7 @@ function syncUI(data) {
   document.getElementById('playersAInput').value = data.playersA || '';
   document.getElementById('playersBInput').value = data.playersB || '';
   document.getElementById('streamURLInput').value = data.streamURL || '';
+  document.getElementById('delayInput').value = (data.scoreDelay !== undefined && data.scoreDelay !== null) ? data.scoreDelay : 15;
 
   const sponsors = data.sponsors || {};
   document.getElementById('sponsor1Input').value = sponsors.s1 || '';
@@ -1154,6 +1170,13 @@ function initAdmin() {
   bindTextInput('playersAInput', 'playersA');
   bindTextInput('playersBInput', 'playersB');
   bindTextInput('streamURLInput', 'streamURL');
+  
+  // Delay input (numeric)
+  document.getElementById('delayInput').addEventListener('input', debounce((e) => {
+    const val = Math.max(0, Math.min(120, parseInt(e.target.value) || 0));
+    pushData({ scoreDelay: val }, `Delay: ${val}s`);
+  }, 400));
+
   bindTextInput('sponsor1Input', 'sponsors/s1');
   bindTextInput('sponsor2Input', 'sponsors/s2');
   bindTextInput('sponsor3Input', 'sponsors/s3');
