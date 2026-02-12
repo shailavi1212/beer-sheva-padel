@@ -261,7 +261,7 @@ body::after {
 
 .score-header .col-name { 
   flex: 1; 
-  padding-left: 52px;
+  padding-left: 16px;
 }
 
 .score-header .col-label {
@@ -301,39 +301,6 @@ body::after {
   border-bottom: 1px solid rgba(0, 240, 255, 0.06);
 }
 
-.team-row.serving {
-  background: linear-gradient(90deg, rgba(251, 191, 36, 0.04), transparent 40%);
-}
-
-/* Serve indicator */
-.serve-cell {
-  width: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.serve-indicator {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: rgba(100, 100, 100, 0.15);
-  border: 1px solid rgba(100, 100, 100, 0.1);
-  transition: all 0.4s ease;
-}
-
-.team-row.serving .serve-indicator {
-  background: var(--neon-yellow);
-  border-color: var(--neon-yellow);
-  box-shadow: 0 0 8px rgba(251, 191, 36, 0.6), 0 0 20px rgba(251, 191, 36, 0.3);
-  animation: servePulse 1.5s ease-in-out infinite;
-}
-
-@keyframes servePulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(251, 191, 36, 0.6), 0 0 20px rgba(251, 191, 36, 0.3); transform: scale(1); }
-  50% { box-shadow: 0 0 12px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.4); transform: scale(1.2); }
-}
 
 /* Name cell */
 .name-cell {
@@ -555,8 +522,7 @@ body::after {
   .score-cell.sets-cell .val { font-size: 16px; }
   .score-cell.pts-cell .val { font-size: 18px; }
   .score-header .col-label { width: 48px; font-size: 7px; }
-  .score-header .col-name { padding-left: 40px; }
-  .serve-cell { width: 30px; }
+  .score-header .col-name { padding-left: 12px; }
   .set-history-cell { width: 34px; }
   .set-history-cell .set-score { font-size: 14px; }
   .set-history-cell .set-score .tb-sup { font-size: 8px; top: -3px; right: -7px; }
@@ -629,9 +595,6 @@ body::after {
 
     <!-- Team A Row -->
     <div class="team-row" id="rowA">
-      <div class="serve-cell">
-        <div class="serve-indicator"></div>
-      </div>
       <div class="name-cell">
         <div class="team-name" id="teamAName">TEAM A</div>
         <div class="player-names" id="playersA">—</div>
@@ -650,9 +613,6 @@ body::after {
 
     <!-- Team B Row -->
     <div class="team-row" id="rowB">
-      <div class="serve-cell">
-        <div class="serve-indicator"></div>
-      </div>
       <div class="name-cell">
         <div class="team-name" id="teamBName">TEAM B</div>
         <div class="player-names" id="playersB">—</div>
@@ -784,10 +744,42 @@ let prevPointsA = null;
 let prevPointsB = null;
 const POINTS_SEQUENCE = [0, 15, 30, 40];
 
+// ═══ 15-SECOND DELAY for Games & Points ═══
+const SCORE_DELAY_MS = 15000;
+let delayedScoreTimer = null;
+let isFirstLoad = true;
+
 function getPointsDisplay(val, isTiebreak) {
   if (isTiebreak) return val;
   if (val >= 0 && val < POINTS_SEQUENCE.length) return POINTS_SEQUENCE[val];
   return 'A';
+}
+
+// Apply delayed score/points update to the DOM
+function applyDelayedScores(scoreA, scoreB, pointsA, pointsB, isTiebreak) {
+  const scoreAEl = document.getElementById('scoreA');
+  const scoreBEl = document.getElementById('scoreB');
+
+  if (prevScoreA !== null && prevScoreA !== scoreA) pulseScore(scoreAEl);
+  if (prevScoreB !== null && prevScoreB !== scoreB) pulseScore(scoreBEl);
+
+  scoreAEl.textContent = scoreA;
+  scoreBEl.textContent = scoreB;
+  prevScoreA = scoreA;
+  prevScoreB = scoreB;
+
+  const pointsAEl = document.getElementById('pointsA');
+  const pointsBEl = document.getElementById('pointsB');
+  const displayA = getPointsDisplay(pointsA, isTiebreak);
+  const displayB = getPointsDisplay(pointsB, isTiebreak);
+
+  if (prevPointsA !== null && prevPointsA !== displayA) pulseScore(pointsAEl);
+  if (prevPointsB !== null && prevPointsB !== displayB) pulseScore(pointsBEl);
+
+  pointsAEl.textContent = displayA;
+  pointsBEl.textContent = displayB;
+  prevPointsA = displayA;
+  prevPointsB = displayB;
 }
 
 matchRef.on('value', (snapshot) => {
@@ -796,45 +788,14 @@ matchRef.on('value', (snapshot) => {
 
   document.getElementById('loadingOverlay').classList.add('hidden');
 
+  // ── Instant updates (no delay) ──
   document.getElementById('teamAName').textContent = data.teamA || 'TEAM A';
   document.getElementById('teamBName').textContent = data.teamB || 'TEAM B';
   document.getElementById('playersA').textContent = data.playersA || '—';
   document.getElementById('playersB').textContent = data.playersB || '—';
 
-  const scoreAEl = document.getElementById('scoreA');
-  const scoreBEl = document.getElementById('scoreB');
-  const newScoreA = data.scoreA ?? 0;
-  const newScoreB = data.scoreB ?? 0;
-
-  if (prevScoreA !== null && prevScoreA !== newScoreA) pulseScore(scoreAEl);
-  if (prevScoreB !== null && prevScoreB !== newScoreB) pulseScore(scoreBEl);
-
-  scoreAEl.textContent = newScoreA;
-  scoreBEl.textContent = newScoreB;
-  prevScoreA = newScoreA;
-  prevScoreB = newScoreB;
-
   document.getElementById('setsA').textContent = data.setsA ?? 0;
   document.getElementById('setsB').textContent = data.setsB ?? 0;
-
-  const isTiebreak = data.isTiebreak || false;
-  const pointsAEl = document.getElementById('pointsA');
-  const pointsBEl = document.getElementById('pointsB');
-  const newPointsA = getPointsDisplay(data.pointsA || 0, isTiebreak);
-  const newPointsB = getPointsDisplay(data.pointsB || 0, isTiebreak);
-
-  if (prevPointsA !== null && prevPointsA !== newPointsA) pulseScore(pointsAEl);
-  if (prevPointsB !== null && prevPointsB !== newPointsB) pulseScore(pointsBEl);
-
-  pointsAEl.textContent = newPointsA;
-  pointsBEl.textContent = newPointsB;
-  prevPointsA = newPointsA;
-  prevPointsB = newPointsB;
-
-  const rowA = document.getElementById('rowA');
-  const rowB = document.getElementById('rowB');
-  rowA.classList.toggle('serving', data.serving === 'A');
-  rowB.classList.toggle('serving', data.serving === 'B');
 
   // Set history - convert Firebase object to array
   const setHistory = data.setHistory ? Object.values(data.setHistory) : [];
@@ -846,6 +807,25 @@ matchRef.on('value', (snapshot) => {
   updateSponsor('sponsor1', sponsors.s1);
   updateSponsor('sponsor2', sponsors.s2);
   updateSponsor('sponsor3', sponsors.s3);
+
+  // ── Delayed updates (games & points) ──
+  const newScoreA = data.scoreA ?? 0;
+  const newScoreB = data.scoreB ?? 0;
+  const newPointsA = data.pointsA || 0;
+  const newPointsB = data.pointsB || 0;
+  const isTiebreak = data.isTiebreak || false;
+
+  if (isFirstLoad) {
+    // On first load, show immediately (no delay)
+    applyDelayedScores(newScoreA, newScoreB, newPointsA, newPointsB, isTiebreak);
+    isFirstLoad = false;
+  } else {
+    // Cancel any pending delayed update and schedule a new one
+    clearTimeout(delayedScoreTimer);
+    delayedScoreTimer = setTimeout(() => {
+      applyDelayedScores(newScoreA, newScoreB, newPointsA, newPointsB, isTiebreak);
+    }, SCORE_DELAY_MS);
+  }
 });
 
 setTimeout(() => {
