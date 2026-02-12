@@ -986,6 +986,14 @@ function updateScoreUI() {
   document.getElementById('scoreBDisplay').textContent = matchData.scoreB;
   document.getElementById('setsADisplay').textContent = matchData.setsA;
   document.getElementById('setsBDisplay').textContent = matchData.setsB;
+
+  // ✅ FIX — Update points display properly
+  document.getElementById('pointsADisplay').textContent =
+    getPointsDisplay(matchData.pointsA, matchData.isTiebreak);
+
+  document.getElementById('pointsBDisplay').textContent =
+    getPointsDisplay(matchData.pointsB, matchData.isTiebreak);
+
   document.getElementById('scoreTeamALabel').textContent = matchData.teamA || 'TEAM A';
   document.getElementById('scoreTeamBLabel').textContent = matchData.teamB || 'TEAM B';
   document.getElementById('pointsTeamALabel').textContent = matchData.teamA || 'PTS A';
