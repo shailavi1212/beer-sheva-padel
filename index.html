@@ -744,8 +744,8 @@ let prevPointsA = null;
 let prevPointsB = null;
 const POINTS_SEQUENCE = [0, 15, 30, 40];
 
-// ═══ 15-SECOND DELAY for Games & Points ═══
-const SCORE_DELAY_MS = 15000;
+// ═══ DYNAMIC DELAY for Games & Points ═══
+let SCORE_DELAY_MS = 15000;
 let delayedScoreTimer = null;
 let isFirstLoad = true;
 
@@ -808,6 +808,10 @@ matchRef.on('value', (snapshot) => {
   updateSponsor('sponsor2', sponsors.s2);
   updateSponsor('sponsor3', sponsors.s3);
 
+  // ── Update delay from admin setting ──
+  const delaySeconds = (data.scoreDelay !== undefined && data.scoreDelay !== null) ? data.scoreDelay : 15;
+  SCORE_DELAY_MS = delaySeconds * 1000;
+
   // ── Delayed updates (games & points) ──
   const newScoreA = data.scoreA ?? 0;
   const newScoreB = data.scoreB ?? 0;
@@ -815,8 +819,8 @@ matchRef.on('value', (snapshot) => {
   const newPointsB = data.pointsB || 0;
   const isTiebreak = data.isTiebreak || false;
 
-  if (isFirstLoad) {
-    // On first load, show immediately (no delay)
+  if (isFirstLoad || SCORE_DELAY_MS === 0) {
+    // On first load or zero delay, show immediately
     applyDelayedScores(newScoreA, newScoreB, newPointsA, newPointsB, isTiebreak);
     isFirstLoad = false;
   } else {
