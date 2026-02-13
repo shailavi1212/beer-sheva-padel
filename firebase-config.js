@@ -17,4 +17,4 @@ const firebaseConfig = {
 };
 
 
-const ADMIN_PASSWORD = "padel2026";
+const ADMIN_PASSWORD = "bspadel2026";
