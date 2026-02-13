@@ -1109,6 +1109,10 @@ function updateScoreUI() {
   document.getElementById('scoreTeamBLabel').textContent = matchData.teamB || 'TEAM B';
   document.getElementById('pointsTeamALabel').textContent = matchData.teamA || 'PTS A';
   document.getElementById('pointsTeamBLabel').textContent = matchData.teamB || 'PTS B';
+  document.getElementById('pointsADisplay').textContent = getPointsDisplay(matchData.pointsA || 0, matchData.isTiebreak);
+  document.getElementById('pointsBDisplay').textContent = getPointsDisplay(matchData.pointsB || 0, matchData.isTiebreak);
+  var tbBtn = document.getElementById('tiebreakToggle');
+  if (tbBtn) tbBtn.textContent = matchData.isTiebreak ? 'TIEBREAK ON' : 'TIEBREAK OFF';
 }
 
 function updateServeUI() {
