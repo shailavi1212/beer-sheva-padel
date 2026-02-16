@@ -415,11 +415,14 @@ function renderSetHistory(sh) {
 }
 var prevPointsA=null,prevPointsB=null,PS=[0,15,30,40];
 function getPD(v,tb){if(tb)return v;if(v>=0&&v<PS.length)return PS[v];return'A';}
-/* Score delay: buffer score changes before showing on broadcast */
+/* Score delay: queue-based system — every score change is delayed individually.
+   If multiple changes happen during the delay window, each one is shown
+   in order after its own delay has elapsed. */
 var SCORE_DELAY = 15000;
-var scoreDelayTimer = null;
-var pendingScoreData = null;
+var scoreQueue = [];       /* Array of { data, showAt } */
+var scoreQueueInterval = null;
 var lastMatchData = null;
+var lastQueuedData = null;  /* Track what was last queued to detect changes */
 var isFirstLoad = true;
 
 /* Listen for delay setting changes */
@@ -448,6 +451,28 @@ function hasScoreChanged(oldD, newD) {
     JSON.stringify(oldD.setHistory||{})!==JSON.stringify(newD.setHistory||{});
 }
 
+/* Process the queue: apply any items whose delay time has passed */
+function processScoreQueue() {
+  var now = Date.now();
+  while (scoreQueue.length > 0 && scoreQueue[0].showAt <= now) {
+    var item = scoreQueue.shift();
+    applyScoreData(item.data);
+    lastMatchData = item.data;
+  }
+  /* Stop the interval if queue is empty to save resources */
+  if (scoreQueue.length === 0 && scoreQueueInterval) {
+    clearInterval(scoreQueueInterval);
+    scoreQueueInterval = null;
+  }
+}
+
+/* Start the queue processor if not already running */
+function ensureQueueProcessor() {
+  if (!scoreQueueInterval) {
+    scoreQueueInterval = setInterval(processScoreQueue, 200);
+  }
+}
+
 matchRef.on('value', function(snap) {
   var d=snap.val(); if(!d)return;
   document.getElementById('loadingOverlay').classList.add('hidden');
@@ -464,26 +489,24 @@ matchRef.on('value', function(snap) {
     isFirstLoad = false;
     applyScoreData(d);
     lastMatchData = d;
+    lastQueuedData = d;
     return;
   }
 
-  if (hasScoreChanged(lastMatchData, d)) {
-    pendingScoreData = d;
-    if (scoreDelayTimer) clearTimeout(scoreDelayTimer);
+  if (hasScoreChanged(lastQueuedData, d)) {
+    lastQueuedData = d;
     if (SCORE_DELAY === 0) {
+      /* No delay — apply immediately */
       applyScoreData(d);
-      pendingScoreData = null;
+      lastMatchData = d;
+      /* Clear any pending queue items since we're showing latest instantly */
+      scoreQueue = [];
     } else {
-      scoreDelayTimer = setTimeout(function() {
-        if (pendingScoreData) {
-          applyScoreData(pendingScoreData);
-          lastMatchData = pendingScoreData;
-          pendingScoreData = null;
-        }
-      }, SCORE_DELAY);
+      /* Add to queue with the time it should be displayed */
+      scoreQueue.push({ data: d, showAt: Date.now() + SCORE_DELAY });
+      ensureQueueProcessor();
     }
   }
-  lastMatchData = d;
 });
 setTimeout(function(){document.getElementById('loadingOverlay').classList.add('hidden');},5000);
 </script>
