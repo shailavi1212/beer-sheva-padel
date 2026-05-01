@@ -2,8 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>BEER SHEVA PADEL LEAGUE</title>
+<meta name="theme-color" content="#070E18">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BS Padel Live">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="sponsor2.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
@@ -64,6 +71,38 @@ body::before { content: ''; position: fixed; inset: 0; background: radial-gradie
 .video-wrapper:-webkit-full-screen .fullscreen-toggle {
   bottom: 24px;
   right: 24px;
+}
+body.ios-video-mode { overflow: hidden; }
+body.ios-video-mode .top-nav,
+body.ios-video-mode .sponsor-bar,
+body.ios-video-mode .broadcast-footer { display: none; }
+body.ios-video-mode #page-live {
+  max-width: none;
+  min-height: 100vh;
+  padding: 0;
+}
+body.ios-video-mode .broadcast-container {
+  min-height: 100vh;
+}
+body.ios-video-mode .video-wrapper {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  aspect-ratio: auto;
+  border: none;
+  border-radius: 0;
+  z-index: 250;
+}
+body.ios-video-mode .video-wrapper .fullscreen-toggle {
+  right: calc(env(safe-area-inset-right, 0px) + 16px);
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+}
+body.ios-video-mode .video-wrapper .scoreboard-hud {
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  right: calc(env(safe-area-inset-right, 0px) + 12px);
 }
 .video-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; background: radial-gradient(ellipse at center, rgba(59,159,231,0.03) 0%, transparent 70%), var(--bg-deep); z-index: 0; }
 .video-placeholder .icon { width: 80px; height: 80px; border: 2px solid rgba(212,168,67,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: pulseGlow 2.5s ease-in-out infinite; }
@@ -459,17 +498,29 @@ scheduleRef.on('value', function(snap) {
 initSchedGroupTabs(); renderFixtureTabs(); renderCurrentFixture();
 
 /* ========== LIVE MATCH ========== */
-var prevScoreA = null, prevScoreB = null, currentStreamURL = '';
+var prevScoreA = null, prevScoreB = null, currentStreamURL = '', rawStreamURL = '';
+function getYouTubeVideoId(url) {
+  if (!url) return '';
+  var m = url.match(/youtu\.be\/([^?&]+)/);
+  if (m) return m[1];
+  m = url.match(/[?&]v=([^?&]+)/);
+  if (m) return m[1];
+  m = url.match(/youtube\.com\/embed\/([^?&]+)/);
+  if (m) return m[1];
+  m = url.match(/youtube\.com\/live\/([^?&]+)/);
+  if (m) return m[1];
+  return '';
+}
 function getYouTubeEmbedURL(url) {
   if (!url) return '';
   if (url.indexOf('/embed/') !== -1) return url;
-  var m = url.match(/youtu\.be\/([^?&]+)/);
-  if (m) return 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1&mute=1';
-  m = url.match(/[?&]v=([^?&]+)/);
-  if (m) return 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1&mute=1';
-  m = url.match(/youtube\.com\/live\/([^?&]+)/);
-  if (m) return 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1&mute=1';
+  var videoId = getYouTubeVideoId(url);
+  if (videoId) return 'https://www.youtube.com/embed/' + videoId + '?autoplay=1&mute=1';
   return url;
+}
+function getYouTubeWatchURL(url) {
+  var videoId = getYouTubeVideoId(url);
+  return videoId ? 'https://www.youtube.com/watch?v=' + videoId : url;
 }
 function updateSponsor(id, url) {
   var el = document.getElementById(id);
@@ -477,6 +528,7 @@ function updateSponsor(id, url) {
   else el.innerHTML = '<span class="empty-sponsor">Sponsor</span>';
 }
 function updateStream(url) {
+  rawStreamURL = url || '';
   var eu = getYouTubeEmbedURL(url);
   if (eu === currentStreamURL) return; currentStreamURL = eu;
   var w = document.getElementById('videoWrapper'), p = document.getElementById('videoPlaceholder');
@@ -485,15 +537,29 @@ function updateStream(url) {
 }
 var fullscreenTarget = document.getElementById('videoWrapper');
 var fullscreenToggle = document.getElementById('fullscreenToggle');
+var isiOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function isIOSVideoMode() {
+  return document.body.classList.contains('ios-video-mode');
+}
 function getFullscreenElement() {
   return document.fullscreenElement || document.webkitFullscreenElement || null;
 }
 function updateFullscreenButton() {
   if (!fullscreenToggle) return;
+  if (isiOSDevice) {
+    fullscreenToggle.textContent = isIOSVideoMode() ? 'צא ממסך מלא' : 'מסך מלא';
+    return;
+  }
   fullscreenToggle.textContent = getFullscreenElement() === fullscreenTarget ? 'צא ממסך מלא' : 'מסך מלא';
 }
 function toggleFullscreen() {
   if (!fullscreenTarget) return;
+  if (isiOSDevice) {
+    document.body.classList.toggle('ios-video-mode');
+    window.scrollTo(0, 0);
+    updateFullscreenButton();
+    return;
+  }
   if (getFullscreenElement() === fullscreenTarget) {
     if (document.exitFullscreen) document.exitFullscreen();
     else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
@@ -505,6 +571,14 @@ function toggleFullscreen() {
 if (fullscreenToggle) fullscreenToggle.addEventListener('click', toggleFullscreen);
 document.addEventListener('fullscreenchange', updateFullscreenButton);
 document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+window.addEventListener('orientationchange', function() {
+  if (isiOSDevice && isIOSVideoMode()) window.scrollTo(0, 0);
+});
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').catch(function() {});
+  });
+}
 updateFullscreenButton();
 function pulseScore(el){ el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); }
 function renderSetHistory(sh) {
